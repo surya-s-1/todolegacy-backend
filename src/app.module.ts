@@ -15,6 +15,7 @@ import { Task } from './todo/entities/task.entity'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
+        type: configService.get<string>('DB_TYPE') as any,
         url: configService.get<string>('DB_CONN_STR') as string,
         entities: [User, Task],
         logging: true,
