@@ -11,8 +11,14 @@ async function bootstrap() {
       transform: true
     })
   );
+  const rawOrigins = process.env.CORS_ORIGINS ?? 'https://surya-s-1.github.io';
+  const allowedOrigins = rawOrigins
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
   app.enableCors({
-    origin: 'https://surya-s-1.github.io',
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
