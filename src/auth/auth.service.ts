@@ -1,9 +1,10 @@
-import { ConflictException, UnauthorizedException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
+import { BadRequestException, ConflictException, UnauthorizedException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { JwtService } from '@nestjs/jwt'
 import { Repository } from 'typeorm'
 import * as bcrypt from 'bcrypt'
 import { User } from './entities/user.entity'
+import { ResetPasswordDto } from './dto/reset-password.dto'
 
 @Injectable()
 export class AuthService {
@@ -98,6 +99,44 @@ export class AuthService {
             }
 
             throw new InternalServerErrorException('Failed to refresh token')
+        }
+    }
+
+    async resetPassword(resetPasswordDto: ResetPasswordDto) {
+        try {
+            const { username, currentPassword, password, newPassword } = resetPasswordDto
+            const activeCurrentPassword = currentPassword || password
+
+            if (!activeCurrentPassword) {
+                throw new BadRequestException('Current password is required')
+            }
+
+            const user = await this.userRepository.findOne({ where: { username } })
+
+            if (!user) {
+                throw new UnauthorizedException('User does not exist')
+            }
+
+            const isPasswordValid = await bcrypt.compare(activeCurrentPassword, user.password)
+
+            if (!isPasswordValid) {
+                throw new UnauthorizedException('Invalid credentials')
+            }
+
+            user.password = await bcrypt.hash(newPassword, 10)
+            await this.userRepository.save(user)
+
+            return {
+                message: 'Password reset successfully'
+            }
+        } catch (error) {
+            this.logger.error(error)
+
+            if (error instanceof UnauthorizedException || error instanceof BadRequestException) {
+                throw error
+            }
+
+            throw new InternalServerErrorException('Failed to reset password')
         }
     }
 

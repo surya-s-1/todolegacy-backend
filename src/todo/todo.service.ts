@@ -2,7 +2,7 @@ import { ConflictException, Injectable, InternalServerErrorException, Logger, Un
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Task } from './entities/task.entity'
-import { User } from 'src/auth/entities/user.entity'
+import { User } from '../auth/entities/user.entity'
 
 @Injectable()
 export class TodoService {
